@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -67,4 +69,15 @@ dependencies {
     implementation(libs.mvicore)
     implementation(libs.mvicore.android)
     implementation(libs.mvicore.model.watcher)
+    implementation(libs.icons)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+
+    implementation(libs.retrofit)
+    implementation(libs.gson.converter)
+
+    implementation(libs.room.android)
+    ksp(libs.room.compiler)
+    implementation(libs.room.ktx)
 }
