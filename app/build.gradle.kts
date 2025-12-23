@@ -82,4 +82,6 @@ dependencies {
     implementation(libs.room.ktx)
 
     implementation(libs.rxjava.adapter)
+
+    implementation(libs.coil)
 }
