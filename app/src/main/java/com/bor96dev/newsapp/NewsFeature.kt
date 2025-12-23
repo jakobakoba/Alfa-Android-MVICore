@@ -5,16 +5,15 @@ import com.badoo.mvicore.element.Reducer
 import com.badoo.mvicore.feature.ActorReducerFeature
 import com.badoo.mvicore.feature.ReducerFeature
 import io.reactivex.rxjava3.core.Observable
-import kotlin.contracts.Effect
 import kotlin.contracts.ExperimentalContracts
 
-class NewsFeature : ActorReducerFeature<NewsFeature.Wish, Effect, State, Nothing>(
+class NewsFeature : ActorReducerFeature<NewsFeature.Wish, NewsFeature.Effect, State, Nothing>(
     initialState = State(),
     actor = ActorImpl(),
     reducer = ReducerImpl()
 ) {
     data class State(
-        val news: List<News> = mutableListOf(),
+        val news: List<Article> = mutableListOf(),
         val isLoading: Boolean = false,
         val query : String = "",
     )
@@ -29,6 +28,7 @@ class NewsFeature : ActorReducerFeature<NewsFeature.Wish, Effect, State, Nothing
         object StartedLoading : Effect()
         data class FinishedWithSuccess(val news: List<News>) : Effect()
         data class FinishedWithError(val throwable: Throwable): Effect()
+        data class QueryChanged(val query: String) : Effect()
     }
 
     class ActorImpl: Actor<State, Wish, Effect> {
