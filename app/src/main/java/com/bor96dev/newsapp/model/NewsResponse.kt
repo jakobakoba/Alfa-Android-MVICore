@@ -1,4 +1,4 @@
-package com.bor96dev.newsapp
+package com.bor96dev.newsapp.model
 
 data class NewsResponse (
     val status: String,

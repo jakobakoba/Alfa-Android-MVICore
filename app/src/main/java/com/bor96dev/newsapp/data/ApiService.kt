@@ -1,5 +1,6 @@
-package com.bor96dev.newsapp
+package com.bor96dev.newsapp.data
 
+import com.bor96dev.newsapp.model.NewsResponse
 import io.reactivex.rxjava3.core.Observable
 import retrofit2.http.GET
 import retrofit2.http.Query

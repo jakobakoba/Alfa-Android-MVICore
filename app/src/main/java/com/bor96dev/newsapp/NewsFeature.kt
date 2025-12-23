@@ -4,6 +4,8 @@ import com.badoo.mvicore.android.AndroidMainThreadFeatureScheduler
 import com.badoo.mvicore.element.Actor
 import com.badoo.mvicore.element.Reducer
 import com.badoo.mvicore.feature.ActorReducerFeature
+import com.bor96dev.newsapp.data.ApiService
+import com.bor96dev.newsapp.model.Article
 import io.reactivex.rxjava3.core.Observable
 import jakarta.inject.Inject
 

@@ -1,4 +1,4 @@
-package com.bor96dev.newsapp
+package com.bor96dev.newsapp.data
 
 import dagger.Module
 import dagger.Provides
@@ -15,7 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitModule {
     @Provides
     @Singleton
-    fun provideRetrofit(baseUrl: String): Retrofit = Retrofit.Builder()
+    fun provideRetrofit(): Retrofit = Retrofit.Builder()
         .baseUrl("https://newsapi.org/v2/")
         .addCallAdapterFactory(
             RxJava3CallAdapterFactory.createWithScheduler(
