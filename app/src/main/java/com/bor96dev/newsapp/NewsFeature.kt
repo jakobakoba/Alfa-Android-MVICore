@@ -1,5 +1,6 @@
 package com.bor96dev.newsapp
 
+import com.badoo.mvicore.android.AndroidMainThreadFeatureScheduler
 import com.badoo.mvicore.element.Actor
 import com.badoo.mvicore.element.Reducer
 import com.badoo.mvicore.feature.ActorReducerFeature
@@ -8,10 +9,11 @@ import jakarta.inject.Inject
 
 class NewsFeature @Inject constructor(
     private val apiService: ApiService
-): ActorReducerFeature<NewsFeature.Wish, NewsFeature.Effect, State, Nothing>(
+) : ActorReducerFeature<NewsFeature.Wish, NewsFeature.Effect, NewsFeature.State, Nothing>(
     initialState = State(),
-    actor = ActorImpl(),
-    reducer = ReducerImpl()
+    actor = ActorImpl(apiService),
+    reducer = ReducerImpl(),
+    featureScheduler = AndroidMainThreadFeatureScheduler
 ) {
     data class State(
         val news: List<Article> = mutableListOf(),
@@ -27,41 +29,50 @@ class NewsFeature @Inject constructor(
 
     sealed class Effect {
         object StartedLoading : Effect()
-        data class FinishedWithSuccess(val news: List<News>) : Effect()
+        data class FinishedWithSuccess(val news: List<Article>) : Effect()
         data class FinishedWithError(val throwable: Throwable): Effect()
         data class QueryChanged(val query: String) : Effect()
     }
 
-    class ActorImpl: Actor<State, Wish, Effect> {
-        private val service : Observable<String> = TODO()
+    class ActorImpl(private val apiService: ApiService) : Actor<State, Wish, Effect> {
         override fun invoke(
             state: State,
             wish: Wish
-        ): Observable<out Effect>  = when(wish){
-            is Wish.RefreshSwiped -> loadNews()
-            is Wish.Search -> loadNews()
-            is Wish.ClearSearch -> loadNews()
+        ): Observable<out Effect> = when (wish) {
+            is Wish.RefreshSwiped -> loadNews(state.query)
+            is Wish.Search -> Observable.concat(
+                Observable.just(Effect.QueryChanged(wish.text)),
+                loadNews(wish.text)
+            )
+
+            is Wish.ClearSearch -> Observable.concat(
+                Observable.just(Effect.QueryChanged("")),
+                loadNews("")
+            )
 
         }
 
-
+        private fun loadNews(query: String): Observable<Effect> {
+            return apiService.getArticles(query)
+                .map { Effect.FinishedWithSuccess(it.articles) as Effect }
+                .startWithItem(Effect.StartedLoading)
+                .onErrorReturn { Effect.FinishedWithError(it) }
+        }
     }
 
-    class ReducerImpl: Reducer<State, Effect>{
+    class ReducerImpl : Reducer<State, Effect> {
         override fun invoke(
             state: State,
-            effect: NewsFeature.Effect
+            effect: Effect
         ): State = when (effect){
-            is NewsFeature.Effect.StartedLoading -> state.copy(isLoading = true)
-            is NewsFeature.Effect.FinishedWithSuccess -> state.copy(
+            is Effect.StartedLoading -> state.copy(isLoading = true)
+            is Effect.QueryChanged -> state.copy(query = effect.query)
+            is Effect.FinishedWithSuccess -> state.copy(
                 isLoading = false,
                 news = effect.news
             )
-            is NewsFeature.Effect.FinishedWithError -> state.copy(
-                isLoading = false
-            )
+
+            is Effect.FinishedWithError -> state.copy(isLoading = false)
         }
-
-
     }
 }
