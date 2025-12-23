@@ -18,7 +18,7 @@ class NewsFeature @Inject constructor(
     data class State(
         val news: List<Article> = mutableListOf(),
         val isLoading: Boolean = false,
-        val query : String = "",
+        val query: String = "",
     )
 
     sealed class Wish {
@@ -53,7 +53,7 @@ class NewsFeature @Inject constructor(
         }
 
         private fun loadNews(query: String): Observable<Effect> {
-            return apiService.getArticles(query)
+            return apiService.searchArticles(query)
                 .map { Effect.FinishedWithSuccess(it.articles) as Effect }
                 .startWithItem(Effect.StartedLoading)
                 .onErrorReturn { Effect.FinishedWithError(it) }
