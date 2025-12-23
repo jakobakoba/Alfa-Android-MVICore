@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiService {
-    @GET("v2/everything")
+    @GET("everything")
     fun getArticles(
         @Query("q") query: String = "",
         @Query("sortBy") sortBy: String = "publishedAt",

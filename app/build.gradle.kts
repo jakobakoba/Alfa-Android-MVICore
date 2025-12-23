@@ -80,4 +80,6 @@ dependencies {
     implementation(libs.room.android)
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
+
+    implementation(libs.rxjava.adapter)
 }

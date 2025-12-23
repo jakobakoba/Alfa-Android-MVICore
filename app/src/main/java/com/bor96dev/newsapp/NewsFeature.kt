@@ -3,11 +3,12 @@ package com.bor96dev.newsapp
 import com.badoo.mvicore.element.Actor
 import com.badoo.mvicore.element.Reducer
 import com.badoo.mvicore.feature.ActorReducerFeature
-import com.badoo.mvicore.feature.ReducerFeature
 import io.reactivex.rxjava3.core.Observable
-import kotlin.contracts.ExperimentalContracts
+import jakarta.inject.Inject
 
-class NewsFeature : ActorReducerFeature<NewsFeature.Wish, NewsFeature.Effect, State, Nothing>(
+class NewsFeature @Inject constructor(
+    private val apiService: ApiService
+): ActorReducerFeature<NewsFeature.Wish, NewsFeature.Effect, State, Nothing>(
     initialState = State(),
     actor = ActorImpl(),
     reducer = ReducerImpl()

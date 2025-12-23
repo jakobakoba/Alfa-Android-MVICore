@@ -46,6 +46,8 @@ room-android = { group = "androidx.room", name = "room-runtime", version.ref = "
 room-compiler = {group = "androidx.room", name = "room-compiler", version.ref = "room"}
 room-ktx = {group = "androidx.room", name = "room-ktx", version.ref = "room"}
 
+rxjava-adapter = {group = "com.squareup.retrofit2", name = "adapter-rxjava3", version.ref = "retrofit"}
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
