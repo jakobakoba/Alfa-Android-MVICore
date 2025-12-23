@@ -53,7 +53,12 @@ class NewsFeature @Inject constructor(
         }
 
         private fun loadNews(query: String): Observable<Effect> {
-            return apiService.searchArticles(query)
+            val apiCall = if(query.isBlank()){
+                apiService.getHeadlines()
+            } else {
+                apiService.searchArticles(query)
+            }
+            return apiCall
                 .map { Effect.FinishedWithSuccess(it.articles) as Effect }
                 .startWithItem(Effect.StartedLoading)
                 .onErrorReturn { Effect.FinishedWithError(it) }

@@ -16,6 +16,5 @@ interface ApiService {
     fun getHeadlines(
         @Query("country") country: String = "us",
         @Query("apiKey") apiKey: String = "d7bd9da88ca940e5bd57a0d4cf2a00b1"
-
     ): Observable<NewsResponse>
 }
