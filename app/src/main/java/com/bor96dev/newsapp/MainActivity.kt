@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -98,12 +99,18 @@ fun MainScreen(
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
                 placeholder = { Text("Поиск новостей по теме...") },
-                singleLine = true
+                singleLine = true,
+                shape = RoundedCornerShape(8.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = { feature.accept(NewsFeature.Wish.SearchClicked(text)) }) {
+            Button(
+                modifier = Modifier.height(56.dp),
+                shape = RoundedCornerShape(8.dp),
+                onClick = { feature.accept(NewsFeature.Wish.SearchClicked(text)) }) {
                 Text("Поиск")
             }
         }
