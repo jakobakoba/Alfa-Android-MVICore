@@ -27,9 +27,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.badoo.binder.Binder
 import com.badoo.mvicore.feature.Feature
 import com.bor96dev.newsapp.model.NewsItemUi
@@ -103,14 +106,17 @@ fun ArticleItem(item: NewsItemUi) {
     Card(elevation = CardDefaults.cardElevation(4.dp)) {
         Column {
             AsyncImage(
-                model = item.imageUrl,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(item.imageUrl.toUri())
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
-                placeholder = painterResource(R.drawable.placeholder),
-                error = painterResource(R.drawable.placeholder),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(180.dp),
+                placeholder = painterResource(R.drawable.placeholder),
+                error = painterResource(R.drawable.placeholder)
             )
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(text = item.title, style = MaterialTheme.typography.titleMedium)

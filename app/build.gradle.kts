@@ -81,4 +81,5 @@ dependencies {
     implementation(libs.rxjava.adapter)
 
     implementation(libs.coil)
+    implementation(libs.interceptor)
 }

@@ -15,7 +15,7 @@ ksp = "2.3.4"
 retrofit = "3.0.0"
 coil = "2.6.0"
 hiltNavigationVersion = "1.2.0"
-
+interceptor = "4.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,6 +47,7 @@ gson-converter= {group = "com.squareup.retrofit2", name = "converter-gson", vers
 rxjava-adapter = {group = "com.squareup.retrofit2", name = "adapter-rxjava3", version.ref = "retrofit"}
 
 coil = {group = "io.coil-kt", name = "coil-compose", version.ref ="coil"}
+interceptor = {group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "interceptor"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

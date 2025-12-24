@@ -18,6 +18,10 @@ class NewsFeature @Inject constructor(
     reducer = ReducerImpl(),
     featureScheduler = AndroidMainThreadFeatureScheduler
 ) {
+
+    init {
+        accept(Wish.Search(""))
+    }
     data class State(
         val news: List<Article> = emptyList(),
         val isLoading: Boolean = false,
@@ -25,7 +29,6 @@ class NewsFeature @Inject constructor(
     )
 
     sealed class Wish {
-        object RefreshSwiped : Wish()
         data class Search(val text: String) : Wish()
     }
 
@@ -41,22 +44,29 @@ class NewsFeature @Inject constructor(
             state: State,
             wish: Wish
         ): Observable<out Effect> = when (wish) {
-            is Wish.Search ->
-                Observable.just(wish.text)
-                    .debounce(600, TimeUnit.MILLISECONDS)
-                    .distinctUntilChanged()
-                    .switchMap { query ->
-                        Observable.concat(
-                            Observable.just(Effect.QueryChanged(query)),
-                            loadNews(query)
-                        )
-                    }
-            is Wish.RefreshSwiped -> loadNews(state.query)
+            is Wish.Search -> {
+                if (wish.text.isEmpty()) {
+                    Observable.concat(
+                        Observable.just(Effect.QueryChanged(wish.text)),
+                        loadNews(wish.text)
+                    )
+                } else {
+                    Observable.just(wish.text)
+                        .debounce(600, TimeUnit.MILLISECONDS)
+                        .distinctUntilChanged()
+                        .switchMap { query ->
+                            Observable.concat(
+                                Observable.just(Effect.QueryChanged(query)),
+                                loadNews(query)
+                            )
+                        }
+                }
+            }
         }
 
         private fun loadNews(query: String): Observable<Effect> {
-            val apiCall = if(query.isBlank()){
-                apiService.getHeadlines()
+            val apiCall = if (query == "") {
+                apiService.searchArticles("айти")
             } else {
                 apiService.searchArticles(query)
             }
@@ -72,12 +82,13 @@ class NewsFeature @Inject constructor(
             state: State,
             effect: Effect
         ): State = when (effect){
-            is Effect.StartedLoading -> state.copy(isLoading = true)
+            is Effect.StartedLoading -> state.copy(isLoading = true, news = emptyList())
             is Effect.QueryChanged -> state.copy(query = effect.query)
             is Effect.FinishedWithSuccess -> state.copy(
                 isLoading = false,
                 news = effect.news
             )
+
             is Effect.FinishedWithError -> state.copy(isLoading = false, news = emptyList())
         }
     }
