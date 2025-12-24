@@ -21,20 +21,29 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.badoo.binder.Binder
+import com.badoo.mvicore.feature.Feature
 import com.bor96dev.newsapp.model.NewsItemUi
-import com.bor96dev.newsapp.model.UiEvent
+import com.bor96dev.newsapp.model.NewsStateUi
+import com.bor96dev.newsapp.model.NewsTransformer
 import com.bor96dev.newsapp.ui.theme.NewsAppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.functions.Consumer
+import jakarta.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var newsFeature: NewsFeature
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -42,7 +51,8 @@ class MainActivity : ComponentActivity() {
             NewsAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MainScreen(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        feature = newsFeature
                     )
                 }
             }
@@ -53,14 +63,18 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel = hiltViewModel()
+    feature: NewsFeature
 ) {
-    val state by viewModel.uiState
+    val state by rememberFeatureState(
+        feature = feature,
+        transformer = NewsTransformer,
+        initial = NewsStateUi()
+    )
 
     Column(modifier = modifier.fillMaxSize()) {
         OutlinedTextField(
             value = state.query,
-            onValueChange = { viewModel.onEvent(UiEvent.SendQuery(it)) },
+            onValueChange = { feature.accept(NewsFeature.Wish.Search(it)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
@@ -73,7 +87,10 @@ fun MainScreen(
         }
 
         LazyColumn(contentPadding = PaddingValues(16.dp)) {
-            items(state.items) { item ->
+            items(
+                state.items,
+                key = { it.title + it.imageUrl }
+            ) { item ->
                 ArticleItem(item)
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -106,4 +123,24 @@ fun ArticleItem(item: NewsItemUi) {
             }
         }
     }
+}
+
+@Composable
+fun <UiState : Any> rememberFeatureState(
+    feature: Feature<*, NewsFeature.State, *>,
+    transformer: (NewsFeature.State) -> UiState,
+    initial: UiState
+): androidx.compose.runtime.State<UiState> {
+    val uiState = remember { mutableStateOf(initial) }
+    val binder = remember { Binder() }
+
+    DisposableEffect(feature) {
+        val consumer = Consumer<NewsFeature.State> { state ->
+            uiState.value = transformer(state)
+        }
+
+        binder.bind(feature to consumer)
+        onDispose { binder.dispose() }
+    }
+    return uiState
 }

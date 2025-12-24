@@ -8,9 +8,10 @@ import com.bor96dev.newsapp.data.ApiService
 import com.bor96dev.newsapp.model.Article
 import io.reactivex.rxjava3.core.Observable
 import jakarta.inject.Inject
+import java.util.concurrent.TimeUnit
 
 class NewsFeature @Inject constructor(
-    private val apiService: ApiService
+    apiService: ApiService
 ) : ActorReducerFeature<NewsFeature.Wish, NewsFeature.Effect, NewsFeature.State, Nothing>(
     initialState = State(),
     actor = ActorImpl(apiService),
@@ -18,7 +19,7 @@ class NewsFeature @Inject constructor(
     featureScheduler = AndroidMainThreadFeatureScheduler
 ) {
     data class State(
-        val news: List<Article> = mutableListOf(),
+        val news: List<Article> = emptyList(),
         val isLoading: Boolean = false,
         val query: String = "",
     )
@@ -26,7 +27,6 @@ class NewsFeature @Inject constructor(
     sealed class Wish {
         object RefreshSwiped : Wish()
         data class Search(val text: String) : Wish()
-        object ClearSearch : Wish()
     }
 
     sealed class Effect {
@@ -41,17 +41,17 @@ class NewsFeature @Inject constructor(
             state: State,
             wish: Wish
         ): Observable<out Effect> = when (wish) {
+            is Wish.Search ->
+                Observable.just(wish.text)
+                    .debounce(600, TimeUnit.MILLISECONDS)
+                    .distinctUntilChanged()
+                    .switchMap { query ->
+                        Observable.concat(
+                            Observable.just(Effect.QueryChanged(query)),
+                            loadNews(query)
+                        )
+                    }
             is Wish.RefreshSwiped -> loadNews(state.query)
-            is Wish.Search -> Observable.concat(
-                Observable.just(Effect.QueryChanged(wish.text)),
-                loadNews(wish.text)
-            )
-
-            is Wish.ClearSearch -> Observable.concat(
-                Observable.just(Effect.QueryChanged("")),
-                loadNews("")
-            )
-
         }
 
         private fun loadNews(query: String): Observable<Effect> {
@@ -78,8 +78,7 @@ class NewsFeature @Inject constructor(
                 isLoading = false,
                 news = effect.news
             )
-
-            is Effect.FinishedWithError -> state.copy(isLoading = false)
+            is Effect.FinishedWithError -> state.copy(isLoading = false, news = emptyList())
         }
     }
 }
