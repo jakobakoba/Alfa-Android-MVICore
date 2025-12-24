@@ -60,9 +60,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        if (feature.state.query.isEmpty() && feature.state.news.isEmpty()) {
-            feature.accept(NewsFeature.Wish.SearchClicked("айти"))
-        }
         setContent {
             NewsAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

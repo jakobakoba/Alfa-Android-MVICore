@@ -2,6 +2,7 @@ package com.bor96dev.newsapp
 
 import com.badoo.mvicore.android.AndroidMainThreadFeatureScheduler
 import com.badoo.mvicore.element.Actor
+import com.badoo.mvicore.element.Bootstrapper
 import com.badoo.mvicore.element.Reducer
 import com.badoo.mvicore.feature.ActorReducerFeature
 import com.bor96dev.newsapp.data.ApiService
@@ -24,6 +25,7 @@ class NewsFeature @Inject constructor(
     initialState = State(),
     actor = ActorImpl(apiService),
     reducer = ReducerImpl(),
+    bootstrapper = BootstrapperImpl(),
     featureScheduler = AndroidMainThreadFeatureScheduler,
 ) {
     data class State(
@@ -101,4 +103,9 @@ class NewsFeature @Inject constructor(
                 )
         }
     }
+}
+
+class BootstrapperImpl : Bootstrapper<NewsFeature.Wish> {
+    override fun invoke(): Observable<NewsFeature.Wish> =
+        Observable.just(NewsFeature.Wish.SearchClicked("айти"))
 }
