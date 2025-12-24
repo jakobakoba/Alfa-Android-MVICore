@@ -3,7 +3,8 @@ package com.bor96dev.newsapp.model
 data class NewsStateUi (
     val items: List<NewsItemUi> = emptyList(),
     val isLoading: Boolean = false,
-    val query: String = ""
+    val query: String = "",
+    val errorMessage: String? = null
 )
 
 data class NewsItemUi (
@@ -12,7 +13,8 @@ data class NewsItemUi (
     val imageUrl: String
 )
 
-sealed class UiEvent {
-    data class SendQuery(val query: String) : UiEvent()
-    object RefreshSwipe : UiEvent()
+sealed class UiError {
+    object NoInternet : UiError()
+    object EmptyResult : UiError()
+    object Unknown : UiError()
 }

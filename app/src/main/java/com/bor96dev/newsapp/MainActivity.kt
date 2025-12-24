@@ -4,15 +4,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -25,6 +29,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -45,17 +52,22 @@ import jakarta.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     @Inject
-    lateinit var newsFeature: NewsFeature
+    lateinit var feature: NewsFeature
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (feature.state.query.isEmpty() && feature.state.news.isEmpty()) {
+            feature.accept(NewsFeature.Wish.SearchClicked("айти"))
+        }
         setContent {
             NewsAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MainScreen(
                         modifier = Modifier.padding(innerPadding),
-                        feature = newsFeature
+                        feature = feature
                     )
                 }
             }
@@ -74,28 +86,54 @@ fun MainScreen(
         initial = NewsStateUi()
     )
 
+    var text by rememberSaveable { mutableStateOf(state.query) }
+
     Column(modifier = modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = state.query,
-            onValueChange = { feature.accept(NewsFeature.Wish.Search(it)) },
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            placeholder = { Text("Поиск новостей по теме...") },
-            singleLine = true
-        )
-
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Поиск новостей по теме...") },
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = { feature.accept(NewsFeature.Wish.SearchClicked(text)) }) {
+                Text("Поиск")
+            }
+        }
         if (state.isLoading) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
 
-        LazyColumn(contentPadding = PaddingValues(16.dp)) {
-            items(
-                state.items,
-                key = { it.title + it.imageUrl }
-            ) { item ->
-                ArticleItem(item)
-                Spacer(modifier = Modifier.height(12.dp))
+        when {
+            state.isLoading -> {
+                CenterState("Загрузка", "Поиск новостей...")
+            }
+
+            state.errorMessage != null -> {
+                CenterState("Ошибка", state.errorMessage.toString())
+            }
+
+            state.items.isEmpty() -> {
+                CenterState("Пусто", "Ничего не найдено")
+            }
+
+            else -> {
+                LazyColumn(contentPadding = PaddingValues(16.dp)) {
+                    items(
+                        state.items,
+                        key = { it.title + it.imageUrl }
+                    ) { item ->
+                        ArticleItem(item)
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
             }
         }
     }
@@ -149,4 +187,18 @@ fun <UiState : Any> rememberFeatureState(
         onDispose { binder.dispose() }
     }
     return uiState
+}
+
+@Composable
+fun CenterState(title: String, subtitle: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            Text(subtitle, style = MaterialTheme.typography.bodySmall)
+        }
+    }
 }

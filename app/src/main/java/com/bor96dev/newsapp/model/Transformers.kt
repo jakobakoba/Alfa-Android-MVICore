@@ -18,7 +18,13 @@ object NewsTransformer: (NewsFeature.State) -> NewsStateUi {
                 )
             },
             isLoading = state.isLoading,
-            query = state.query
+            query = state.query,
+            errorMessage = when (state.error){
+                UiError.NoInternet -> "Нет интернета / Превышен API лимит"
+                UiError.EmptyResult -> "Ничего не найдено"
+                UiError.Unknown -> "Неизвестная ошибка"
+                null -> null
+            }
         )
     }
 }

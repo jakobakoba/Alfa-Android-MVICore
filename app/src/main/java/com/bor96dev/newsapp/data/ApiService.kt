@@ -10,6 +10,6 @@ interface ApiService {
     fun searchArticles(
         @Query("q") query: String = "",
         @Query("sortBy") sortBy: String = "popularity",
-        @Query("apiKey") apiKey: String = "65d6998ce19b48b299f5381d1efacb0a"
+        @Query("apiKey") apiKey: String = "576ec6e77a104e0398b55b8fbfa78941"
     ): Observable<NewsResponse>
 }
