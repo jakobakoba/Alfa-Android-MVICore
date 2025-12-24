@@ -1,13 +1,13 @@
 package com.bor96dev.newsapp.model
 
-data class NewsStateUi (
+data class NewsStateUi(
     val items: List<NewsItemUi> = emptyList(),
     val isLoading: Boolean = false,
     val query: String = "",
     val errorMessage: String? = null
 )
 
-data class NewsItemUi (
+data class NewsItemUi(
     val title: String,
     val description: String,
     val imageUrl: String

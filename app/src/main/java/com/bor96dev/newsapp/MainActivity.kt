@@ -53,7 +53,6 @@ import jakarta.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     @Inject
     lateinit var feature: NewsFeature
 
